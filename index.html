@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#5f4dee" />
+  <title>Matriz PCI</title>
+  <style>
+    :root {
+      --bg: #f4f5f9;
+      --card: #ffffff;
+      --text: #202337;
+      --muted: #6f7487;
+      --primary: #5f4dee;
+      --primary-soft: #ece9ff;
+      --danger: #c9364f;
+      --danger-soft: #ffe8ed;
+      --success: #1f8f62;
+      --success-soft: #e4f7ef;
+      --border: #dfe2ea;
+      --shadow: 0 10px 30px rgba(31, 35, 58, .09);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+    .brand-mark {
+      width: 38px; height: 38px; border-radius: 13px;
+      display: grid; place-items: center;
+      background: var(--primary); color: white;
+      box-shadow: var(--shadow);
+    }
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 15px;
+      font-weight: 750;
+      background: #e8eaf1;
+      color: var(--text);
+    }
+    .btn.primary { background: var(--primary); color: white; }
+    .btn.danger { background: var(--danger-soft); color: var(--danger); }
+    .btn.ghost { background: transparent; border: 1px solid var(--border); }
+    .btn.small { padding: 8px 11px; border-radius: 11px; font-size: .9rem; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    main { width: min(1180px, 100%); margin: 0 auto; padding: 20px 16px 90px; flex: 1; }
+    .screen { display: none; animation: fade .2s ease; }
+    .screen.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .hero {
+      min-height: calc(100vh - 180px);
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    .hero-card {
+      width: min(620px, 100%);
+      background: var(--card);
+      padding: 42px 26px;
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+    }
+    .hero h1 { margin: 0 0 10px; font-size: clamp(2.2rem, 7vw, 4.6rem); letter-spacing: -.05em; }
+    .hero p { color: var(--muted); font-size: 1.05rem; line-height: 1.6; margin: 0 auto 26px; max-width: 48ch; }
+
+    .section-head { margin-bottom: 18px; }
+    .section-head h2 { margin: 0 0 6px; font-size: clamp(1.6rem, 4vw, 2.4rem); }
+    .section-head p { margin: 0; color: var(--muted); }
+
+    .area-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .area-card {
+      text-align: left;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--card);
+      box-shadow: 0 5px 18px rgba(31,35,58,.05);
+      transition: .16s ease;
+    }
+    .area-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .area-card strong { display: block; font-size: 1.06rem; margin-bottom: 6px; }
+    .area-card span { color: var(--muted); font-size: .92rem; }
+
+    .progress-card {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .progress-track { height: 10px; border-radius: 999px; background: #e6e8ef; overflow: hidden; margin-top: 8px; }
+    .progress-bar { height: 100%; width: 0; background: var(--primary); transition: width .2s; }
+    .progress-number { font-weight: 850; font-size: 1.15rem; }
+
+    .config-grid, .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(285px, 1fr)); gap: 14px; }
+    .group-card {
+      background: var(--card);
+      border: 2px solid transparent;
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 5px 18px rgba(31,35,58,.05);
+      transition: .16s ease;
+    }
+    .group-card.selected { border-color: var(--primary); box-shadow: 0 10px 28px rgba(95,77,238,.15); }
+    .group-card.drop-target { outline: 3px dashed var(--primary); outline-offset: 3px; }
+    .group-title { width: 100%; border: 0; border-bottom: 1px solid var(--border); padding: 8px 4px; font-weight: 850; font-size: 1.05rem; background: transparent; }
+    label { display: block; margin-top: 12px; font-weight: 750; font-size: .9rem; }
+    textarea, .text-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 11px 12px;
+      margin-top: 6px;
+      min-height: 76px;
+      resize: vertical;
+      background: #fbfbfd;
+    }
+    .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 7px; }
+    .segmented button { border: 1px solid var(--border); border-radius: 12px; padding: 9px; background: white; font-weight: 750; }
+    .segmented button.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+    .board-layout { display: grid; grid-template-columns: minmax(260px, 350px) 1fr; gap: 16px; align-items: start; }
+    .content-panel {
+      position: sticky;
+      top: 82px;
+      max-height: calc(100vh - 105px);
+      overflow: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .content-toolbar { position: sticky; top: -14px; background: var(--card); padding: 8px 0 12px; z-index: 2; }
+    .search { width: 100%; border: 1px solid var(--border); border-radius: 13px; padding: 11px 12px; }
+    .content-list { display: grid; gap: 10px; }
+    .content-item {
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 12px;
+      background: #fff;
+      cursor: grab;
+    }
+    .content-item.used { border-color: #9dd8c3; background: var(--success-soft); }
+    .content-item .meta { color: var(--muted); font-size: .77rem; margin-bottom: 6px; }
+    .content-item p { margin: 0; line-height: 1.35; }
+    .content-item .add-hint { margin-top: 8px; font-size: .76rem; color: var(--primary); font-weight: 750; }
+
+    .assigned-list { min-height: 90px; margin-top: 12px; display: grid; gap: 8px; }
+    .assigned-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; background: var(--primary-soft); border-radius: 13px; padding: 10px; }
+    .assigned-item small { display: block; color: var(--muted); margin-bottom: 3px; }
+    .remove { border: 0; background: white; color: var(--danger); width: 30px; height: 30px; border-radius: 9px; font-weight: 900; }
+    .empty { color: var(--muted); font-size: .9rem; text-align: center; padding: 18px 8px; border: 1px dashed var(--border); border-radius: 13px; }
+
+    .alert { display: none; padding: 13px 15px; border-radius: 14px; margin-bottom: 14px; font-weight: 700; }
+    .alert.show { display: block; }
+    .alert.error { background: var(--danger-soft); color: var(--danger); }
+    .alert.success { background: var(--success-soft); color: var(--success); }
+    .summary-group { break-inside: avoid; background: white; border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 13px; }
+    .summary-group h3 { margin: 0 0 10px; }
+    .summary-group ul { margin: 8px 0 0; padding-left: 20px; }
+
+    footer { text-align: center; color: var(--muted); padding: 20px; font-size: .86rem; }
+
+    @media (max-width: 780px) {
+      .topbar { align-items: flex-start; }
+      .brand span { display: none; }
+      .top-actions .btn { padding: 9px 11px; font-size: .85rem; }
+      main { padding-inline: 12px; }
+      .board-layout { grid-template-columns: 1fr; }
+      .content-panel { position: static; max-height: none; }
+      .group-grid { grid-template-columns: 1fr; }
+      .hero-card { padding: 32px 20px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .topbar, .no-print, footer { display: none !important; }
+      main { max-width: none; padding: 0; }
+      .screen { display: none !important; }
+      #summaryScreen { display: block !important; }
+      .summary-group { border: 1px solid #aaa; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar no-print">
+    <div class="brand"><div class="brand-mark">PCI</div><span>Matriz PCI</span></div>
+    <div class="top-actions">
+      <button class="btn ghost small" id="backBtn" hidden>Volver</button>
+      <button class="btn ghost small" id="saveBtn" hidden>Guardar</button>
+      <button class="btn small" id="printBtn" hidden>Imprimir</button>
+      <button class="btn primary small" id="closeBtn" hidden>Cerrar matriz</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="homeScreen" class="screen active">
+      <div class="hero">
+        <div class="hero-card">
+          <div class="brand-mark" style="margin:0 auto 18px;width:64px;height:64px;border-radius:20px">PCI</div>
+          <h1>Matriz PCI</h1>
+          <p>Organizá los contenidos priorizados en niveles, laboratorios o talleres. El sistema controla que no quede ningún contenido afuera.</p>
+          <button class="btn primary" data-go="areasScreen">Comenzar</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="areasScreen" class="screen">
+      <div class="section-head">
+        <h2>Elegí un área</h2>
+        <p>Cada área abre la cantidad de agrupamientos ya prescrita.</p>
+      </div>
+      <div id="areaGrid" class="area-grid"></div>
+    </section>
+
+    <section id="configScreen" class="screen">
+      <div class="section-head">
+        <h2 id="configTitle">Configurar agrupamientos</h2>
+        <p>Editá los nombres y completá los campos obligatorios.</p>
+      </div>
+      <div id="configAlert" class="alert error"></div>
+      <div id="configGrid" class="config-grid"></div>
+      <div style="margin-top:18px;display:flex;justify-content:flex-end" class="no-print">
+        <button id="toBoardBtn" class="btn primary">Continuar al tablero</button>
+      </div>
+    </section>
+
+    <section id="boardScreen" class="screen">
+      <div class="section-head">
+        <h2 id="boardTitle">Distribuir contenidos</h2>
+        <p>Arrastrá con el mouse. En celular, seleccioná un agrupamiento y tocá un contenido.</p>
+      </div>
+      <div id="boardAlert" class="alert error"></div>
+      <div class="progress-card">
+        <div>
+          <strong>Cobertura de contenidos</strong>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+        <div id="progressNumber" class="progress-number">0 / 0</div>
+      </div>
+      <div class="board-layout">
+        <aside class="content-panel">
+          <div class="content-toolbar">
+            <input id="searchInput" class="search" placeholder="Buscar contenido o materia…" />
+          </div>
+          <div id="contentList" class="content-list"></div>
+        </aside>
+        <div id="boardGroups" class="group-grid"></div>
+      </div>
+    </section>
+
+    <section id="summaryScreen" class="screen">
+      <div class="section-head">
+        <h2 id="summaryTitle">Matriz final</h2>
+        <p id="summarySubtitle"></p>
+      </div>
+      <div id="summaryAlert" class="alert success show">Matriz completa y validada.</div>
+      <div id="summaryContent"></div>
+      <div class="no-print" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap">
+        <button class="btn ghost" data-go="boardScreen">Volver a editar</button>
+        <button class="btn primary" onclick="window.print()">Imprimir</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>Diseñado por Sebastián Giampani</footer>
+</div>
+
+<script>
+const AREA_CONFIG = {
+  "Lengua y Literatura": { count: 5, label: "Nivel", objectives: true },
+  "Matemática": { count: 5, label: "Nivel", objectives: true },
+  "Lenguas Adicionales": { count: 5, label: "Nivel", objectives: true },
+  "Ciencias Sociales": { count: 9, label: "Laboratorio", objectives: true, context: true, type: true },
+  "Ciencias Naturales": { count: 9, label: "Laboratorio", objectives: true, context: true, type: true },
+  "Artes": { count: 6, label: "Taller", objectives: true },
+  "Tecnologías": { count: 6, label: "Taller", objectives: true },
+  "Educación Física": { count: 10, label: "Taller", objectives: true }
+};
+
+const SAMPLE_CONTENTS = [
+  { id:"len-1", area:"Lengua y Literatura", subject:"Lengua y Literatura", axis:"Lectura — Prácticas del lenguaje", content:"Lectura y comentario de obras literarias de distintos géneros." },
+  { id:"len-2", area:"Lengua y Literatura", subject:"Lengua y Literatura", axis:"Escritura — Producción de textos", content:"Planificación, textualización y revisión de textos escritos." },
+  { id:"len-3", area:"Lengua y Literatura", subject:"Lengua y Literatura", axis:"Oralidad — Interacción", content:"Participación en intercambios orales argumentativos." },
+  { id:"len-4", area:"Lengua y Literatura", subject:"Lengua y Literatura", axis:"Reflexión sobre el lenguaje", content:"Reconocimiento de recursos cohesivos y organización textual." },
+  { id:"len-5", area:"Lengua y Literatura", subject:"Lengua y Literatura", axis:"Literatura — Narrativa", content:"Análisis de narradores, personajes, tiempo y espacio." },
+  { id:"mat-1", area:"Matemática", subject:"Matemática", axis:"Números y álgebra", content:"Resolución de problemas con números racionales." },
+  { id:"mat-2", area:"Matemática", subject:"Matemática", axis:"Funciones y álgebra", content:"Análisis de relaciones funcionales y sus representaciones." },
+  { id:"mat-3", area:"Matemática", subject:"Matemática", axis:"Geometría y medida", content:"Construcción y análisis de figuras geométricas." },
+  { id:"mat-4", area:"Matemática", subject:"Matemática", axis:"Estadística y probabilidad", content:"Interpretación de tablas, gráficos y medidas de tendencia central." },
+  { id:"mat-5", area:"Matemática", subject:"Matemática", axis:"Modelización", content:"Elaboración de modelos para resolver situaciones problemáticas." },
+  { id:"ing-1", area:"Lenguas Adicionales", subject:"Inglés", axis:"Comprensión oral", content:"Comprensión de textos orales breves sobre temas cotidianos." },
+  { id:"ing-2", area:"Lenguas Adicionales", subject:"Inglés", axis:"Producción oral", content:"Producción de intercambios orales en situaciones conocidas." },
+  { id:"ing-3", area:"Lenguas Adicionales", subject:"Inglés", axis:"Lectura", content:"Comprensión global y específica de textos escritos." },
+  { id:"ing-4", area:"Lenguas Adicionales", subject:"Inglés", axis:"Escritura", content:"Producción de textos descriptivos y narrativos breves." },
+  { id:"ing-5", area:"Lenguas Adicionales", subject:"Inglés", axis:"Reflexión intercultural", content:"Reconocimiento de prácticas culturales de comunidades de habla inglesa." },
+  { id:"soc-1", area:"Ciencias Sociales", subject:"Historia", axis:"Sociedades y procesos históricos", content:"Cambios y continuidades en las sociedades modernas." },
+  { id:"soc-2", area:"Ciencias Sociales", subject:"Historia", axis:"Estado y poder", content:"Formación y transformación de los Estados nacionales." },
+  { id:"soc-3", area:"Ciencias Sociales", subject:"Geografía", axis:"Territorios y sociedades", content:"Organización y transformación de los espacios urbanos y rurales." },
+  { id:"soc-4", area:"Ciencias Sociales", subject:"Geografía", axis:"Ambiente", content:"Relaciones entre sociedad, naturaleza y problemáticas ambientales." },
+  { id:"soc-5", area:"Ciencias Sociales", subject:"Formación Ética y Ciudadana", axis:"Ciudadanía y derechos", content:"Construcción histórica y ejercicio de los derechos humanos." },
+  { id:"soc-6", area:"Ciencias Sociales", subject:"Economía", axis:"Producción y distribución", content:"Actores económicos y circuitos de producción, distribución y consumo." },
+  { id:"soc-7", area:"Ciencias Sociales", subject:"Filosofía", axis:"Problemas filosóficos", content:"Formulación de preguntas y construcción de argumentos filosóficos." },
+  { id:"nat-1", area:"Ciencias Naturales", subject:"Biología", axis:"Seres vivos", content:"Organización, funciones y diversidad de los seres vivos." },
+  { id:"nat-2", area:"Ciencias Naturales", subject:"Biología", axis:"Ecosistemas", content:"Relaciones entre organismos y ambiente." },
+  { id:"nat-3", area:"Ciencias Naturales", subject:"Física", axis:"Energía", content:"Transformaciones y conservación de la energía." },
+  { id:"nat-4", area:"Ciencias Naturales", subject:"Física", axis:"Movimiento", content:"Descripción e interpretación de movimientos." },
+  { id:"nat-5", area:"Ciencias Naturales", subject:"Química", axis:"Materia", content:"Propiedades, composición y transformaciones de la materia." },
+  { id:"nat-6", area:"Ciencias Naturales", subject:"Físico-Química", axis:"Interacciones", content:"Interacciones entre sistemas materiales y transferencia de energía." },
+  { id:"art-1", area:"Artes", subject:"Artes Visuales", axis:"Producción — Espacio y forma", content:"Producción de imágenes utilizando relaciones entre espacio, forma y color." },
+  { id:"art-2", area:"Artes", subject:"Música", axis:"Producción — Interpretación", content:"Interpretación vocal e instrumental de repertorios diversos." },
+  { id:"art-3", area:"Artes", subject:"Teatro", axis:"Producción — Estructura dramática", content:"Creación de escenas a partir de acciones, conflictos y personajes." },
+  { id:"tec-1", area:"Tecnologías", subject:"Educación Tecnológica", axis:"Procesos tecnológicos", content:"Análisis y diseño de procesos y productos tecnológicos." },
+  { id:"tec-2", area:"Tecnologías", subject:"Tecnologías de la Información", axis:"Información digital", content:"Producción, organización y comunicación de información digital." },
+  { id:"ef-1", area:"Educación Física", subject:"Educación Física", axis:"Prácticas corporales", content:"Participación en prácticas corporales, ludomotrices y deportivas." },
+  { id:"ef-2", area:"Educación Física", subject:"Educación Física", axis:"Cuerpo y salud", content:"Construcción de hábitos vinculados con el cuidado corporal y la salud." }
+];
+
+const state = {
+  area: null,
+  groups: [],
+  assignments: {},
+  selectedGroup: 0
+};
+
+const screens = [...document.querySelectorAll('.screen')];
+const backBtn = document.getElementById('backBtn');
+const saveBtn = document.getElementById('saveBtn');
+const printBtn = document.getElementById('printBtn');
+const closeBtn = document.getElementById('closeBtn');
+let currentScreen = 'homeScreen';
+
+function showScreen(id) {
+  screens.forEach(s => s.classList.toggle('active', s.id === id));
+  currentScreen = id;
+  const showTools = ['configScreen','boardScreen','summaryScreen'].includes(id);
+  backBtn.hidden = id === 'homeScreen';
+  saveBtn.hidden = !showTools;
+  printBtn.hidden = id !== 'summaryScreen';
+  closeBtn.hidden = id !== 'boardScreen';
+  window.scrollTo({top:0, behavior:'smooth'});
+  if (id === 'summaryScreen') renderSummary();
+}
+
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go) showScreen(go.dataset.go);
+});
+
+backBtn.addEventListener('click', () => {
+  const map = { areasScreen:'homeScreen', configScreen:'areasScreen', boardScreen:'configScreen', summaryScreen:'boardScreen' };
+  showScreen(map[currentScreen] || 'homeScreen');
+});
+
+function renderAreas() {
+  const grid = document.getElementById('areaGrid');
+  grid.innerHTML = Object.entries(AREA_CONFIG).map(([name,cfg]) => `
+    <button class="area-card" data-area="${name}">
+      <strong>${name}</strong>
+      <span>${cfg.count} ${cfg.label.toLowerCase()}${cfg.count === 1 ? '' : 's'}</span>
+    </button>`).join('');
+  grid.querySelectorAll('[data-area]').forEach(btn => btn.addEventListener('click', () => chooseArea(btn.dataset.area)));
+}
+
+function chooseArea(area) {
+  state.area = area;
+  const cfg = AREA_CONFIG[area];
+  state.groups = Array.from({length: cfg.count}, (_, i) => ({
+    id: `${area}-${i}`,
+    name: `${cfg.label} ${i+1}`,
+    objective: '',
+    context: '',
+    type: ''
+  }));
+  state.assignments = Object.fromEntries(state.groups.map(g => [g.id, []]));
+  state.selectedGroup = 0;
+  renderConfig();
+  showScreen('configScreen');
+}
+
+function renderConfig() {
+  const cfg = AREA_CONFIG[state.area];
+  document.getElementById('configTitle').textContent = `${state.area}: ${cfg.label}s`;
+  const grid = document.getElementById('configGrid');
+  grid.innerHTML = state.groups.map((g,i) => `
+    <article class="group-card">
+      <input class="group-title" data-field="name" data-index="${i}" value="${escapeHtml(g.name)}" aria-label="Nombre del agrupamiento" />
+      <label>Objetivos de aprendizaje *</label>
+      <textarea data-field="objective" data-index="${i}" placeholder="Escribí los objetivos de aprendizaje…">${escapeHtml(g.objective)}</textarea>
+      ${cfg.context ? `<label>Contexto problematizador *</label><textarea data-field="context" data-index="${i}" placeholder="Escribí el contexto problematizador…">${escapeHtml(g.context)}</textarea>` : ''}
+      ${cfg.type ? `<label>Tipo de laboratorio *</label><div class="segmented">
+        <button type="button" data-type="Obligatorio" data-index="${i}" class="${g.type==='Obligatorio'?'active':''}">Obligatorio</button>
+        <button type="button" data-type="Electivo" data-index="${i}" class="${g.type==='Electivo'?'active':''}">Electivo</button>
+      </div>` : ''}
+    </article>`).join('');
+
+  grid.querySelectorAll('[data-field]').forEach(el => el.addEventListener('input', () => {
+    state.groups[+el.dataset.index][el.dataset.field] = el.value;
+  }));
+  grid.querySelectorAll('[data-type]').forEach(btn => btn.addEventListener('click', () => {
+    state.groups[+btn.dataset.index].type = btn.dataset.type;
+    renderConfig();
+  }));
+}
+
+function validateConfig() {
+  const cfg = AREA_CONFIG[state.area];
+  const errors = [];
+  state.groups.forEach((g,i) => {
+    if (!g.name.trim()) errors.push(`${cfg.label} ${i+1}: falta el nombre.`);
+    if (!g.objective.trim()) errors.push(`${g.name || cfg.label+' '+(i+1)}: faltan los objetivos.`);
+    if (cfg.context && !g.context.trim()) errors.push(`${g.name}: falta el contexto problematizador.`);
+    if (cfg.type && !g.type) errors.push(`${g.name}: falta indicar si es electivo u obligatorio.`);
+  });
+  return errors;
+}
+
+document.getElementById('toBoardBtn').addEventListener('click', () => {
+  const errors = validateConfig();
+  const alert = document.getElementById('configAlert');
+  if (errors.length) {
+    alert.textContent = errors.slice(0,4).join(' ')+(errors.length>4?` Hay ${errors.length-4} observaciones más.`:'');
+    alert.classList.add('show');
+    return;
+  }
+  alert.classList.remove('show');
+  renderBoard();
+  showScreen('boardScreen');
+});
+
+function areaContents() { return SAMPLE_CONTENTS.filter(c => c.area === state.area); }
+
+function renderBoard(filter='') {
+  document.getElementById('boardTitle').textContent = `${state.area}: distribución de contenidos`;
+  const contents = areaContents();
+  const normalized = filter.toLowerCase().trim();
+  const usedIds = new Set(Object.values(state.assignments).flat());
+  const list = document.getElementById('contentList');
+  list.innerHTML = contents.filter(c => `${c.subject} ${c.axis} ${c.content}`.toLowerCase().includes(normalized)).map(c => `
+    <article class="content-item ${usedIds.has(c.id)?'used':''}" draggable="true" data-content-id="${c.id}" tabindex="0">
+      <div class="meta">${c.subject} · ${c.axis || 'Sin eje/bloque'}</div>
+      <p>${c.content}</p>
+      <div class="add-hint">Arrastrar o tocar para agregar</div>
+    </article>`).join('');
+
+  list.querySelectorAll('[data-content-id]').forEach(item => {
+    item.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', item.dataset.contentId));
+    item.addEventListener('click', () => addAssignment(state.groups[state.selectedGroup].id, item.dataset.contentId));
+    item.addEventListener('keydown', e => { if (e.key === 'Enter') addAssignment(state.groups[state.selectedGroup].id, item.dataset.contentId); });
+  });
+
+  const groups = document.getElementById('boardGroups');
+  groups.innerHTML = state.groups.map((g,i) => {
+    const assigned = state.assignments[g.id] || [];
+    return `<article class="group-card ${i===state.selectedGroup?'selected':''}" data-group-id="${g.id}" data-group-index="${i}">
+      <strong>${escapeHtml(g.name)}</strong>
+      <div style="color:var(--muted);font-size:.82rem;margin-top:4px">${assigned.length} contenido${assigned.length===1?'':'s'} · tocar para seleccionar</div>
+      <div class="assigned-list">
+        ${assigned.length ? assigned.map(id => {
+          const c = contents.find(x=>x.id===id);
+          return `<div class="assigned-item"><div><small>${c.subject} · ${c.axis || 'Sin eje/bloque'}</small>${c.content}</div><button class="remove" data-remove="${id}" data-from="${g.id}" title="Quitar">×</button></div>`;
+        }).join('') : '<div class="empty">Soltá contenidos acá</div>'}
+      </div>
+    </article>`;
+  }).join('');
+
+  groups.querySelectorAll('[data-group-id]').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('[data-remove]')) return;
+      state.selectedGroup = +card.dataset.groupIndex;
+      renderBoard(document.getElementById('searchInput').value);
+    });
+    card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drop-target'); });
+    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
+    card.addEventListener('drop', e => {
+      e.preventDefault(); card.classList.remove('drop-target');
+      addAssignment(card.dataset.groupId, e.dataTransfer.getData('text/plain'));
+    });
+  });
+  groups.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', () => removeAssignment(btn.dataset.from, btn.dataset.remove)));
+  updateProgress();
+}
+
+function addAssignment(groupId, contentId) {
+  const arr = state.assignments[groupId];
+  if (!arr.includes(contentId)) arr.push(contentId);
+  renderBoard(document.getElementById('searchInput').value);
+}
+function removeAssignment(groupId, contentId) {
+  state.assignments[groupId] = state.assignments[groupId].filter(id => id !== contentId);
+  renderBoard(document.getElementById('searchInput').value);
+}
+
+function updateProgress() {
+  const total = areaContents().length;
+  const used = new Set(Object.values(state.assignments).flat()).size;
+  const pct = total ? Math.round(used/total*100) : 0;
+  document.getElementById('progressNumber').textContent = `${used} / ${total}`;
+  document.getElementById('progressBar').style.width = `${pct}%`;
+}
+
+document.getElementById('searchInput').addEventListener('input', e => renderBoard(e.target.value));
+
+closeBtn.addEventListener('click', () => {
+  const configErrors = validateConfig();
+  const contents = areaContents();
+  const used = new Set(Object.values(state.assignments).flat());
+  const missing = contents.filter(c => !used.has(c.id));
+  const alert = document.getElementById('boardAlert');
+  const emptyGroups = state.groups.filter(g => !(state.assignments[g.id] || []).length);
+  const errors = [...configErrors];
+  if (missing.length) errors.push(`Faltan asignar ${missing.length} contenido${missing.length===1?'':'s'}.`);
+  if (emptyGroups.length) errors.push(`Hay ${emptyGroups.length} agrupamiento${emptyGroups.length===1?'':'s'} sin contenidos.`);
+  if (errors.length) {
+    alert.textContent = errors.join(' ');
+    alert.classList.add('show');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  alert.classList.remove('show');
+  saveState();
+  showScreen('summaryScreen');
+});
+
+function renderSummary() {
+  if (!state.area) return;
+  const cfg = AREA_CONFIG[state.area];
+  document.getElementById('summaryTitle').textContent = `Matriz PCI · ${state.area}`;
+  document.getElementById('summarySubtitle').textContent = `${cfg.count} ${cfg.label.toLowerCase()}${cfg.count===1?'':'s'} · contenidos priorizados completos`;
+  const contents = areaContents();
+  document.getElementById('summaryContent').innerHTML = state.groups.map(g => {
+    const assigned = state.assignments[g.id] || [];
+    return `<article class="summary-group">
+      <h3>${escapeHtml(g.name)}</h3>
+      <p><strong>Objetivos de aprendizaje:</strong> ${escapeHtml(g.objective)}</p>
+      ${cfg.context ? `<p><strong>Contexto problematizador:</strong> ${escapeHtml(g.context)}</p>` : ''}
+      ${cfg.type ? `<p><strong>Tipo:</strong> ${escapeHtml(g.type)}</p>` : ''}
+      <strong>Contenidos priorizados:</strong>
+      <ul>${assigned.map(id => { const c=contents.find(x=>x.id===id); return `<li><em>${c.subject}</em> — ${c.content}</li>`; }).join('')}</ul>
+    </article>`;
+  }).join('');
+}
+
+function saveState() {
+  localStorage.setItem('matrizPCI', JSON.stringify(state));
+}
+saveBtn.addEventListener('click', () => {
+  saveState();
+  saveBtn.textContent = 'Guardado';
+  setTimeout(()=>saveBtn.textContent='Guardar',1200);
+});
+printBtn.addEventListener('click', () => window.print());
+
+function restoreState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('matrizPCI'));
+    if (!saved?.area || !AREA_CONFIG[saved.area]) return;
+    Object.assign(state, saved);
+  } catch (_) {}
+}
+
+function escapeHtml(value='') {
+  return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+
+restoreState();
+renderAreas();
+</script>
+</body>
+</html>
