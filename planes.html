@@ -1,1 +1,38 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=planes-pasos.html?v=1"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Planes de aprendizaje</title><script>location.replace('planes-pasos.html?v=1')</script></head><body><p>Abriendo el asistente de planes de aprendizaje…</p></body></html>
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Planes de aprendizaje</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f7f8}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><iframe id="planes" src="planes-pasos.html?v=2" title="Planes de aprendizaje"></iframe><script>
+const frame=document.getElementById('planes');
+frame.addEventListener('load',()=>{
+  const w=frame.contentWindow;
+  try{
+    w.eval(`
+      window.planSelection=window.planSelection||{school:localStorage.getItem('pciActiveSchool')||'1',area:'',group:'0',plan:'0'};
+      window.render1=function(){
+        const sel=window.planSelection;
+        const areas=Object.keys(pci.areas||{});
+        if(!areas.includes(sel.area)) sel.area=areas[0]||'';
+        const groups=pci.areas?.[sel.area]?.groups||[];
+        if(Number(sel.group)>=groups.length) sel.group='0';
+        const planTotal=['Ciencias Sociales','Ciencias Naturales','Artes','Tecnologías','Educación Física'].includes(sel.area)?2:4;
+        if(Number(sel.plan)>=planTotal) sel.plan='0';
+        $('p1').innerHTML=\`<div class="help"><b>¿Qué hago en este paso?</b><br>Elegí la escuela, el área, el agrupamiento y el plan. Los agrupamientos se leen directamente de la Matriz PCI.</div><div class="selectors"><div class="field"><label>Escuela</label><select id="school"><option value="1">Escuela 1</option><option value="2">Escuela 2</option><option value="3">Escuela 3</option></select></div><div class="field"><label>Área</label><select id="area">\${areas.map(a=>\`<option \${a===sel.area?'selected':''}>\${esc(a)}</option>\`).join('')}</select></div><div class="field"><label>Agrupamiento</label><select id="group">\${groups.map((g,i)=>\`<option value="\${i}" \${String(i)===String(sel.group)?'selected':''}>\${esc(g.name)}</option>\`).join('')}</select></div><div class="field"><label>Plan</label><select id="plan">\${Array.from({length:planTotal},(_,i)=>\`<option value="\${i}" \${String(i)===String(sel.plan)?'selected':''}>Plan \${i+1}</option>\`).join('')}</select></div></div>\${nav(0,2)}\`;
+        $('school').value=sel.school;
+        $('school').onchange=()=>{
+          sel.school=$('school').value;
+          localStorage.setItem('pciActiveSchool',sel.school);
+          loadSchool();
+          sel.area='';sel.group='0';sel.plan='0';
+          render1();
+        };
+        $('area').onchange=()=>{
+          sel.area=$('area').value;
+          sel.group='0';sel.plan='0';
+          render1();
+        };
+        $('group').onchange=()=>{sel.group=$('group').value;sel.plan='0';render1()};
+        $('plan').onchange=()=>{sel.plan=$('plan').value};
+        bindNav();
+      };
+      render1();
+    `);
+  }catch(e){console.error('No se pudo aplicar la corrección de selección',e)}
+});
+</script></body></html>
