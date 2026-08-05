@@ -1,0 +1,94 @@
+{
+  "version": "0.1.0",
+  "nombre": "Motor curricular PCI",
+  "principios": {
+    "prioridad": [
+      "cobertura_contenidos",
+      "asignacion_horas",
+      "validacion_cuatrimestral",
+      "mapa_curricular"
+    ],
+    "regla_horaria": "Las horas asignadas deben ser exactamente iguales a las horas semanales previstas en cada cuatrimestre.",
+    "regla_cobertura": "Todos los contenidos priorizados deben quedar cubiertos al menos una vez en la trayectoria completa.",
+    "regla_repeticion": "Un contenido puede aparecer en mas de un agrupamiento, pero cuenta una sola vez para la cobertura total.",
+    "regla_prioridad_agrupamientos": "La cobertura debe concentrarse primero en los agrupamientos obligatorios; los otros formatos curriculares completan principalmente las horas restantes y pueden profundizar o integrar contenidos ya cubiertos."
+  },
+  "niveles": [
+    {"nivel": 1, "anio": 1, "cuatrimestres": [1, 2]},
+    {"nivel": 2, "anio": 2, "cuatrimestres": [3, 4]},
+    {"nivel": 3, "anio": 3, "cuatrimestres": [5, 6]},
+    {"nivel": 4, "anio": 4, "cuatrimestres": [7, 8]},
+    {"nivel": 5, "anio": 5, "cuatrimestres": [9, 10]}
+  ],
+  "agrupamientos_obligatorios": {
+    "Ciencias Sociales": {"tipo": "Laboratorio", "cantidad": 9},
+    "Ciencias Naturales": {"tipo": "Laboratorio", "cantidad": 9},
+    "Tecnologias": {"tipo": "Taller", "cantidad": 6}
+  },
+  "otros_formatos_curriculares": [
+    {
+      "id": "seminario",
+      "nombre": "Seminario",
+      "descripcion": "Espacio delimitado de indagacion teorica e investigacion sobre un tema o recorte especifico de conocimiento."
+    },
+    {
+      "id": "proyecto",
+      "nombre": "Proyecto",
+      "descripcion": "Unidad didactica organizada alrededor de un problema practico o una pregunta central que requiere una solucion concreta."
+    },
+    {
+      "id": "proyecto_sociocomunitario_solidario",
+      "nombre": "Proyecto Sociocomunitario Solidario",
+      "descripcion": "Propuesta pedagogica institucional articulada directamente con organizaciones de la comunidad externa."
+    }
+  ],
+  "areas_habilitadas_para_otros_formatos": [
+    "Ciencias Sociales",
+    "Ciencias Naturales",
+    "Tecnologias"
+  ],
+  "carga_horaria_formacion_general": {
+    "Lengua y Literatura": [5, 5, 4, 4, 4],
+    "Matematica": [5, 5, 4, 4, 4],
+    "Lenguas Adicionales": [4, 4, 3, 3, 3],
+    "Educacion Fisica": [3, 3, 3, 3, 3],
+    "Artes": [3, 3, 0, 2, 0],
+    "Tecnologias": [2, 2, 2, 2, 0],
+    "FEC": [2, 2, 2, 2, 0],
+    "Geografia": [3, 3, 2, 2, 0],
+    "Historia": [4, 4, 2, 2, 0],
+    "Filosofia": [0, 0, 0, 0, 2],
+    "Economia": [0, 0, 3, 0, 0],
+    "Biologia": [4, 4, 3, 0, 0],
+    "Fisico-quimica": [0, 0, 4, 0, 0],
+    "Fisica": [0, 0, 0, 3, 0],
+    "Quimica": [0, 0, 0, 0, 4],
+    "Tutoria": [1, 1, 0, 0, 0]
+  },
+  "validaciones": [
+    {
+      "id": "R001",
+      "nombre": "Cobertura total de contenidos",
+      "severidad": "bloqueante",
+      "condicion": "Todos los contenidos priorizados deben estar asignados al menos una vez."
+    },
+    {
+      "id": "R002",
+      "nombre": "Horas exactas por cuatrimestre",
+      "severidad": "bloqueante",
+      "condicion": "Las horas asignadas no pueden ser menores ni mayores que las previstas para cada area y cuatrimestre."
+    },
+    {
+      "id": "R003",
+      "nombre": "Prioridad de agrupamientos obligatorios",
+      "severidad": "advertencia",
+      "condicion": "La cobertura debe concentrarse primero en los 9 laboratorios de Sociales/Naturales y los 6 talleres de Tecnologias."
+    },
+    {
+      "id": "R004",
+      "nombre": "Uso de otros formatos",
+      "severidad": "informativa",
+      "condicion": "Los otros formatos curriculares completan principalmente horas remanentes y pueden profundizar o integrar contenidos."
+    }
+  ]
+}
